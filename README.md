@@ -57,6 +57,16 @@ powershell -ExecutionPolicy Bypass -File scripts\cargo.ps1 build --release
 
 打包：先设置上述环境变量（或用 VS 开发人员命令提示符），再执行 `npm run tauri build`（NSIS，当前用户安装）。
 
+### 真实 HEIC 文件验证
+
+`tool-heic2jpg` 带一个开发示例，可直接对某个目录里的真实 HEIC 跑转换（默认质量 85、不递归、不删原文件）：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\cargo.ps1 run -p tool-heic2jpg --example convert_dir -- <目录>
+```
+
+验证记录：使用 `dsoprea/heic-exif-samples` 的 4 个带 EXIF 样本（41KB–3MB），4/4 转换成功，输出 JPG 用 System.Drawing 打开均有效（如 3992×2992），源文件保留；重复运行正确跳过同名 JPG。
+
 ## 右键菜单
 
 GUI「右键菜单管理」区可逐个勾选安装/卸载，也可命令行：

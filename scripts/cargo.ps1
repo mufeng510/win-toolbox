@@ -1,9 +1,7 @@
-# 在 Windows 上以正确的 MSVC/Windows SDK 环境运行 cargo。
-# 用法: powershell -ExecutionPolicy Bypass -File scripts\cargo.ps1 check --workspace
-param(
-    [Parameter(ValueFromRemainingArguments = $true)]
-    [string[]]$CargoArgs
-)
+# Run cargo with the MSVC/Windows SDK environment configured on Windows.
+# No param block: all arguments are passed through via the automatic $args array.
+# Usage: powershell -ExecutionPolicy Bypass -File scripts\cargo.ps1 check --workspace
+#        powershell -ExecutionPolicy Bypass -File scripts\cargo.ps1 run -p tool-heic2jpg --example convert_dir -- <dir>
 
 $ErrorActionPreference = 'Stop'
 
@@ -22,5 +20,5 @@ $env:PATH = "$msvc\bin\Hostx64\x64;$env:PATH"
 $env:LIB = "$sdk\Lib\$sdkVersion\um\x64;$sdk\Lib\$sdkVersion\ucrt\x64;$msvc\lib\x64"
 $env:INCLUDE = "$sdk\Include\$sdkVersion\um;$sdk\Include\$sdkVersion\ucrt;$msvc\include"
 
-& "$env:USERPROFILE\.cargo\bin\cargo.exe" @CargoArgs
+& "$env:USERPROFILE\.cargo\bin\cargo.exe" @args
 exit $LASTEXITCODE
