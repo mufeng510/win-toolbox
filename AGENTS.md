@@ -4,7 +4,7 @@
 个人 Windows 工具箱，单 Tauri v2 应用集合多个小工具。Windows 为主，核心逻辑尽量跨平台。整体发版，不做插件架构。
 
 ## 硬性约束
-1. **不要修改 `Tools/HeicToJpg/`**（旧 C# 工具，仅作功能参考，保留原样直到迁移验证完成）。
+1. 旧 C# `HeicToJpg` 工具（源码 / exe / PowerShell 脚本）已迁移到 `crates/tool-heic2jpg/`，原 `Tools/HeicToJpg/` 目录已删除；如需对照旧实现，查 git 历史（提交 `ecc7d5c` 及之前）。
 2. `tools/manifest.json` 是右键菜单与工具列表的唯一事实来源；新增/删除工具必须同步它，避免幽灵菜单。
 3. 右键菜单只写 HKCU（当前用户），不提权；菜单命令统一为 `"<exe>" --tool <id> --path "%V"`。
 4. 系统设置类工具（`system_tweak: true`）不得在安装时默认启用，GUI 操作前必须有明确的中文确认弹窗。
