@@ -5,7 +5,7 @@
 ## 设计原则
 
 - **单 exe 多工具**：无参数启动显示工具列表；右键菜单调用 `win-toolbox.exe --tool <id> --path "%V"`，进入同一个 exe 的分流逻辑。
-- **清单驱动**：`tools/manifest.json` 是工具列表与右键菜单注册的唯一事实来源，安装/卸载按清单全量同步，避免幽灵菜单。
+- **单一事实来源**：每个工具在自己的 `Tool` trait 实现中声明元数据与右键菜单能力，外壳从注册表自动生成工具列表和菜单；新增工具只需实现 trait 并注册一次，不会出现清单与代码漂移。
 - **整体发版**：不做插件架构；新增工具 = 加一个 crate + 在清单和注册表里登记。
 - **跨平台内核 + 平台适配**：核心逻辑用 Rust 写成独立 crate，Windows 为主，macOS/Linux 先保证核心功能可用。
 - **系统设置隔离**：修改系统状态的工具有 `system_tweak` 标记，不在安装时默认启用，必须在 GUI 显式确认。
@@ -27,12 +27,13 @@ win-toolbox/
 ├── Cargo.toml                 # Rust workspace
 ├── package.json / vite.config.ts / tsconfig.json
 ├── frontend/                  # 原生 TS + Vite 界面
-├── tools/manifest.json        # 工具与右键菜单清单
 ├── crates/
-│   ├── toolbox-core/          # Tool trait / 配置 / 清单 / 错误
+│   ├── toolbox-core/          # Tool trait / 配置 / 错误
 │   ├── tool-hashrename/       # 从 HashRename 移植的核心 + 测试
 │   ├── tool-heic2jpg/         # Rust 版 HEIC 转换
-│   └── tool-classic-menu/     # 经典菜单开关（Windows only）
+│   ├── tool-classic-menu/     # 经典菜单开关（Windows only）
+│   ├── tool-flatten/          # 文件夹平铺
+│   └── tool-image-merge/      # 切片图片合并
 └── src-tauri/                 # Tauri 外壳：命令、分流、菜单管理器
 ```
 

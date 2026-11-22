@@ -38,7 +38,7 @@ impl Tool for ImageMergeTool {
     }
 
     fn capabilities(&self) -> Capabilities {
-        // 右键菜单由外壳按 manifest.json 统一声明，这里不重复注册。
+        // 右键菜单由外壳从 Tool trait 的 capabilities 统一生成，这里不重复注册。
         Capabilities::default()
     }
 

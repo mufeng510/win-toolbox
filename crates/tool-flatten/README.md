@@ -34,4 +34,4 @@ scripts\cargo.ps1 check -p tool-flatten --all-targets
 scripts\cargo.ps1 test -p tool-flatten
 ```
 
-> 注意：本 crate 目录由子 Agent 新增，工作区 `Cargo.toml`、`tools/manifest.json` 与 `src-tauri/src/lib.rs::build_registry` 的注册由主 Agent 统一处理。
+> 注意：本 crate 的元数据与右键菜单能力在 `Tool` trait 中实现；工作区 `Cargo.toml` 与 `src-tauri/src/lib.rs::build_registry` 的注册由主 Agent 统一处理。

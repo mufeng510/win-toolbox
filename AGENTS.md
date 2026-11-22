@@ -5,7 +5,7 @@
 
 ## 硬性约束
 1. 旧 C# `HeicToJpg` 工具（源码 / exe / PowerShell 脚本）已迁移到 `crates/tool-heic2jpg/`，原 `Tools/HeicToJpg/` 目录已删除；如需对照旧实现，查 git 历史（提交 `ecc7d5c` 及之前）。
-2. `tools/manifest.json` 是右键菜单与工具列表的唯一事实来源；新增/删除工具必须同步它，避免幽灵菜单。
+2. 每个工具在 `Tool` trait 实现中声明 id / name / description / platforms / capabilities，这是工具列表与右键菜单的唯一事实来源；外壳从 `build_registry()` 自动生成，不再有独立清单文件，避免事实来源漂移。
 3. 右键菜单只写 HKCU（当前用户），不提权；菜单命令统一为 `"<exe>" --tool <id> --path "%V"`。
 4. 系统设置类工具（`system_tweak: true`）不得在安装时默认启用，GUI 操作前必须有明确的中文确认弹窗。
 5. 前端配置键名与 Rust crate 内部键名不同，统一在 `src-tauri/src/commands.rs::normalize_options` 做映射：

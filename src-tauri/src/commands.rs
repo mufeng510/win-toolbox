@@ -6,7 +6,7 @@ use toolbox_core::{
     config, current_platform, Capabilities, RunContext, ToolReport,
 };
 
-use crate::{build_registry, manifest};
+use crate::build_registry;
 
 #[derive(Serialize)]
 pub struct ToolInfo {
@@ -70,17 +70,16 @@ pub fn app_info() -> AppInfo {
 
 #[tauri::command]
 pub fn list_tools() -> Vec<ToolInfo> {
-    let platform = current_platform();
-    manifest()
-        .tools
+    let registry = build_registry();
+    registry
+        .available()
         .into_iter()
-        .filter(|t| t.platforms.is_empty() || t.platforms.iter().any(|p| p == platform))
         .map(|t| ToolInfo {
-            id: t.id,
-            name: t.name,
-            description: t.description,
-            platforms: t.platforms,
-            capabilities: t.capabilities,
+            id: t.id().to_string(),
+            name: t.name().to_string(),
+            description: t.description().to_string(),
+            platforms: t.platforms().iter().map(|p| p.to_string()).collect(),
+            capabilities: t.capabilities(),
         })
         .collect()
 }

@@ -2,15 +2,10 @@ pub mod commands;
 pub mod dispatch;
 pub mod menu;
 
-use toolbox_core::{Manifest, ToolRegistry};
+use toolbox_core::ToolRegistry;
 
-/// 工具清单：右键菜单注册与工具列表的唯一事实来源（编译期嵌入）。
-pub fn manifest() -> Manifest {
-    Manifest::from_json(include_str!("../../tools/manifest.json"))
-        .expect("tools/manifest.json 必须是合法的 JSON")
-}
-
-/// 构建工具注册表。每个命令调用都新建，无共享可变状态。
+/// 构建工具注册表。每个工具在 Tool trait 中声明自己的元数据与能力，
+/// 这里是工具列表与右键菜单的唯一事实来源；每个命令调用都新建，无共享可变状态。
 pub fn build_registry() -> ToolRegistry {
     let mut registry = ToolRegistry::new();
     registry.register(Box::new(tool_hashrename::HashRenameTool));
@@ -19,6 +14,28 @@ pub fn build_registry() -> ToolRegistry {
     registry.register(Box::new(tool_flatten::FlattenTool));
     registry.register(Box::new(tool_image_merge::ImageMergeTool));
     registry
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// 注册表完整性：新增工具后必须在这里登记，否则 list_tools / 右键菜单都看不到它。
+    #[test]
+    fn all_tools_are_registered() {
+        let registry = build_registry();
+        let ids: Vec<&str> = registry.all().iter().map(|t| t.id()).collect();
+        assert_eq!(
+            ids,
+            vec![
+                "hash-rename",
+                "heic-to-jpg",
+                "classic-menu",
+                "folder-flatten",
+                "image-merge",
+            ]
+        );
+    }
 }
 
 pub fn run() {

@@ -1,10 +1,10 @@
-//! 右键菜单集中管理器：按 tools/manifest.json 全量同步注册表项。
+//! 右键菜单集中管理器：从 ToolRegistry 生成菜单项，全量同步注册表。
 //! 菜单 id 形如 win-toolbox.hash-rename.directory.path_v，避免与其他软件冲突。
 
 use serde::Serialize;
 use toolbox_core::{MenuArg, MenuLocation, MenuVerb};
 
-use crate::manifest;
+use crate::build_registry;
 
 #[derive(Serialize, Clone)]
 pub struct MenuStatusItem {
@@ -44,13 +44,16 @@ pub fn verb_id(tool_id: &str, verb: &MenuVerb) -> String {
 }
 
 fn entries() -> Vec<VerbEntry> {
+    let registry = build_registry();
     let mut out = Vec::new();
-    for tool in manifest().tools {
-        for verb in tool.capabilities.context_menu {
+    for tool in registry.available() {
+        let tool_id = tool.id().to_string();
+        let tool_name = tool.name().to_string();
+        for verb in tool.capabilities().context_menu {
             out.push(VerbEntry {
-                id: verb_id(&tool.id, &verb),
-                tool_id: tool.id.clone(),
-                tool_name: tool.name.clone(),
+                id: verb_id(&tool_id, &verb),
+                tool_id: tool_id.clone(),
+                tool_name: tool_name.clone(),
                 verb,
             });
         }

@@ -34,7 +34,7 @@ impl Tool for HeicToJpgTool {
         "把文件夹内的 HEIC/HEIF 转为 JPG，可按 EXIF 校正方向、调整质量、可选递归与删除原文件。纯 Rust 解码，无外部依赖。"
     }
 
-    /// 空数组表示全平台；这里显式列出三个平台，与 manifest.json 保持一致。
+    /// 空数组表示全平台；这里显式列出三个平台。
     fn platforms(&self) -> &'static [&'static str] {
         &["windows", "macos", "linux"]
     }
@@ -84,7 +84,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn metadata_matches_manifest() {
+    fn metadata_matches_spec() {
         let tool = HeicToJpgTool::new();
         assert_eq!(tool.id(), "heic-to-jpg");
         assert_eq!(tool.platforms(), &["windows", "macos", "linux"][..]);

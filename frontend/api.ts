@@ -1,7 +1,7 @@
 /**
  * 后端 invoke 封装与类型定义。
  *
- * TS 侧类型严格对齐 Rust（crates/toolbox-core/src/tool.rs、manifest.rs）的 serde 形状：
+ * TS 侧类型严格对齐 Rust（crates/toolbox-core/src/tool.rs）的 serde 形状：
  * - MenuLocation / MenuArg 使用 #[serde(rename_all = "snake_case")]
  * - ToolReport { ok, message, details }
  *
