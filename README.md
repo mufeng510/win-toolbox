@@ -17,6 +17,8 @@
 | `hash-rename` | Hash 去重并重命名 | 文件夹 / 文件夹空白处 | 三重内容去重（大小+哈希+逐字节），重复文件进回收站，剩余自然排序重命名为 001、002……只处理当前文件夹 |
 | `heic-to-jpg` | 批量 HEIC 转 JPG | 文件夹空白处 | 纯 Rust 解码 HEIC/HEIF 转 JPG，支持质量、递归、EXIF 方向、删原文件前校验 |
 | `classic-menu` | 恢复 Windows 11 经典右键菜单 | 无（系统设置） | 双 CLSID 方案，HKCU、免管理员、可一键还原 |
+| `folder-flatten` | 文件夹平铺 | 文件夹 / 文件夹空白处 | 把直接子文件夹里的文件移到本文件夹，重名自动加 `(1)`、`(2)` 绝不覆盖；移动后删除空子文件夹，只处理一层 |
+| `image-merge` | 合并切片图片 | 无（GUI 多选） | 多选被切成上下两半的图片，按文件名排序两两合并；宽度必须一致，输出到第一张图所在文件夹并删除原图 |
 
 ## 目录结构
 
@@ -66,6 +68,18 @@ powershell -ExecutionPolicy Bypass -File scripts\cargo.ps1 run -p tool-heic2jpg 
 ```
 
 验证记录：使用 `dsoprea/heic-exif-samples` 的 4 个带 EXIF 样本（41KB–3MB），4/4 转换成功，输出 JPG 用 System.Drawing 打开均有效（如 3992×2992），源文件保留；重复运行正确跳过同名 JPG。
+
+### 新增工具验证记录
+
+- `folder-flatten`：临时目录含 2 个有文件的子目录（其中一个与主目录有同名 `a.txt`）、1 个空目录、1 个带嵌套目录的子目录 → 3 个文件移动成功、`a.txt` 自动变为 `a (1).txt` 且内容正确、3 个空目录删除、嵌套目录及其文件原样保留。
+- `image-merge`：把一张 700×476 的 JPG 切成两张 700×238 的切片 → 输出 `01-top_合并.jpg`（700×476、JPEG），输出到第一张图所在文件夹，两张原图按预期删除。
+
+无界面调用加 `--quiet` / `-q` 可不弹消息框、只把结果写到终端，便于脚本与测试；GUI 和右键菜单入口不受影响：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\cargo.ps1 run --bin win-toolbox -- --tool folder-flatten --path <目录> --quiet
+powershell -ExecutionPolicy Bypass -File scripts\cargo.ps1 run --bin win-toolbox -- --tool image-merge --path <图1> --path <图2> --quiet
+```
 
 ## 右键菜单
 

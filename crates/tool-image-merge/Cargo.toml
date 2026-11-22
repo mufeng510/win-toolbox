@@ -1,0 +1,14 @@
+[package]
+name = "tool-image-merge"
+version.workspace = true
+edition.workspace = true
+# image 0.25.10 要求 Rust 1.88+；如实声明，避免旧工具链给出晦涩的依赖错误。
+rust-version = "1.88"
+license.workspace = true
+
+[dependencies]
+toolbox-core = { workspace = true }
+serde_json = { workspace = true }
+
+# 使用默认 features（含 png / jpeg），确保 image::open 与 PNG/JPEG 编码器都可用。
+image = "0.25.10"

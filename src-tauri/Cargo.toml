@@ -23,6 +23,8 @@ toolbox-core = { workspace = true }
 tool-hashrename = { workspace = true }
 tool-heic2jpg = { workspace = true }
 tool-classic-menu = { workspace = true }
+tool-flatten = { workspace = true }
+tool-image-merge = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 

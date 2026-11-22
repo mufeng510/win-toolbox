@@ -47,6 +47,37 @@
         "context_menu": [],
         "system_tweak": true
       }
+    },
+    {
+      "id": "folder-flatten",
+      "name": "文件夹平铺",
+      "description": "把直接子文件夹里的文件移到本文件夹；重名自动加 (1)、(2)，绝不覆盖；移动后删除空的子文件夹。只处理一层，不递归子目录。",
+      "platforms": ["windows", "macos", "linux"],
+      "capabilities": {
+        "context_menu": [
+          {
+            "location": "directory",
+            "label": "文件夹平铺",
+            "arg": "path_v"
+          },
+          {
+            "location": "directory_background",
+            "label": "文件夹平铺",
+            "arg": "path_v"
+          }
+        ],
+        "system_tweak": false
+      }
+    },
+    {
+      "id": "image-merge",
+      "name": "合并切片图片",
+      "description": "在 GUI 里多选图片，按文件名排序两两上下合并；宽度必须一致，输出到第一张图片所在文件夹并删除原图。",
+      "platforms": ["windows", "macos", "linux"],
+      "capabilities": {
+        "context_menu": [],
+        "system_tweak": false
+      }
     }
   ]
 }

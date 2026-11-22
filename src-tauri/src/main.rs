@@ -11,20 +11,24 @@ fn main() {
         return;
     }
 
+    // --quiet / -q：不弹消息框，结果只写到 stdout/stderr，便于脚本调用与自动化测试。
+    // GUI 与右键菜单入口不带此参数，仍保留原有的中文消息框。
+    let quiet = args.iter().any(|a| a == "--quiet" || a == "-q");
+
     match win_toolbox_lib::dispatch::headless(&args) {
         Ok(report) => {
-            #[cfg(windows)]
-            win_toolbox_lib::dispatch::show_message(
-                if report.ok { "win-toolbox" } else { "win-toolbox · 注意" },
-                &report.details,
-                &report.message,
-            );
-            #[cfg(not(windows))]
-            {
-                println!("{}", report.message);
-                for d in &report.details {
-                    println!("  - {}", d);
-                }
+            println!("OK={}", report.ok);
+            println!("MESSAGE={}", report.message);
+            for line in &report.details {
+                println!("DETAIL: {}", line);
+            }
+            if !quiet {
+                #[cfg(windows)]
+                win_toolbox_lib::dispatch::show_message(
+                    if report.ok { "win-toolbox" } else { "win-toolbox · 注意" },
+                    &report.details,
+                    &report.message,
+                );
             }
             if !report.ok {
                 std::process::exit(1);
@@ -32,10 +36,11 @@ fn main() {
         }
         Err(e) => {
             let msg = e.to_string();
-            #[cfg(windows)]
-            win_toolbox_lib::dispatch::show_message("win-toolbox · 错误", &[msg.clone()], &msg);
-            #[cfg(not(windows))]
-            eprintln!("{}", msg);
+            eprintln!("ERROR: {}", msg);
+            if !quiet {
+                #[cfg(windows)]
+                win_toolbox_lib::dispatch::show_message("win-toolbox · 错误", &[msg.clone()], &msg);
+            }
             std::process::exit(2);
         }
     }

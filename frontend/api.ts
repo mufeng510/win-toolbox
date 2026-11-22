@@ -89,6 +89,19 @@ export interface HeicToJpgConfig {
   delete_original: boolean;
 }
 
+/** 文件夹扁平化：重名策略与预览开关。 */
+export interface FlattenConfig {
+  dry_run: boolean;
+  on_conflict: "auto_rename" | "skip";
+}
+
+/** 图片合并：JPG 质量、切割重叠像素、是否删除原图。 */
+export interface ImageMergeConfig {
+  quality: number;
+  overlap: number;
+  delete_sources: boolean;
+}
+
 /**
  * get_config() / set_config() 的顶层结构，按工具 id 分节
  * （与 Rust config::tool_section / set_tool_section 一致）。
@@ -96,6 +109,8 @@ export interface HeicToJpgConfig {
 export interface AppConfig {
   "hash-rename"?: Partial<HashRenameConfig> & Record<string, unknown>;
   "heic-to-jpg"?: Partial<HeicToJpgConfig> & Record<string, unknown>;
+  "folder-flatten"?: Partial<FlattenConfig> & Record<string, unknown>;
+  "image-merge"?: Partial<ImageMergeConfig> & Record<string, unknown>;
   [key: string]: unknown;
 }
 

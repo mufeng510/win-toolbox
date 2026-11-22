@@ -5,6 +5,8 @@ members = [
     "crates/tool-hashrename",
     "crates/tool-heic2jpg",
     "crates/tool-classic-menu",
+    "crates/tool-flatten",
+    "crates/tool-image-merge",
     "src-tauri",
 ]
 
@@ -19,6 +21,8 @@ toolbox-core = { path = "crates/toolbox-core" }
 tool-hashrename = { path = "crates/tool-hashrename" }
 tool-heic2jpg = { path = "crates/tool-heic2jpg" }
 tool-classic-menu = { path = "crates/tool-classic-menu" }
+tool-flatten = { path = "crates/tool-flatten" }
+tool-image-merge = { path = "crates/tool-image-merge" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"

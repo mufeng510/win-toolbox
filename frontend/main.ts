@@ -3,15 +3,17 @@
  * 只负责界面与状态；所有数据经由 api.ts 调用 Rust 后端。
  */
 
-import { open } from "@tauri-apps/plugin-dialog";
+import { open, type OpenDialogOptions } from "@tauri-apps/plugin-dialog";
 import {
   api,
   type AppConfig,
   type AppInfo,
   type ClassicMenuStatus,
+  type FlattenConfig,
   type HashAlgorithm,
   type HashRenameConfig,
   type HeicToJpgConfig,
+  type ImageMergeConfig,
   type MenuLocation,
   type MenuStatusItem,
   type ToolInfo,
@@ -129,7 +131,24 @@ function heicConfig(): HeicToJpgConfig {
   };
 }
 
-/** 组装 run_tool 的 options。 */
+function flattenConfig(): FlattenConfig {
+  const raw = state.config["folder-flatten"] as Partial<FlattenConfig> | undefined;
+  const conflict = raw?.on_conflict;
+  const on_conflict: FlattenConfig["on_conflict"] =
+    conflict === "auto_rename" || conflict === "skip" ? conflict : "auto_rename";
+  return { dry_run: raw?.dry_run ?? false, on_conflict };
+}
+
+function imageMergeConfig(): ImageMergeConfig {
+  const raw = state.config["image-merge"] as Partial<ImageMergeConfig> | undefined;
+  const q = raw?.quality;
+  const quality = typeof q === "number" && q >= 1 && q <= 100 ? Math.round(q) : 95;
+  const o = raw?.overlap;
+  const overlap = typeof o === "number" && Number.isFinite(o) && o >= 0 ? Math.floor(o) : 0;
+  return { quality, overlap, delete_sources: raw?.delete_sources ?? true };
+}
+
+/** 组装 run_tool 的 options；键名即后端约定的原始键名，不在此做重命名。 */
 function toolOptions(toolId: string): Record<string, unknown> {
   if (toolId === "hash-rename") {
     const c = hashConfig();
@@ -138,6 +157,14 @@ function toolOptions(toolId: string): Record<string, unknown> {
   if (toolId === "heic-to-jpg") {
     const c = heicConfig();
     return { quality: c.quality, recursive: c.recursive, delete_original: c.delete_original };
+  }
+  if (toolId === "folder-flatten") {
+    const c = flattenConfig();
+    return { dry_run: c.dry_run, on_conflict: c.on_conflict };
+  }
+  if (toolId === "image-merge") {
+    const c = imageMergeConfig();
+    return { quality: c.quality, overlap: c.overlap, delete_sources: c.delete_sources };
   }
   return {};
 }
@@ -329,7 +356,51 @@ function settingsMarkup(tool: ToolInfo): string {
         </label>
       </div>`;
   }
+  if (tool.id === "folder-flatten") {
+    const c = flattenConfig();
+    return `
+      <div class="settings-inner">
+        <label class="check-row">
+          <input type="checkbox" data-tool="folder-flatten" data-setting="dry_run" ${c.dry_run ? "checked" : ""} />
+          <span>预览模式（只列出将要执行的操作，不实际修改）</span>
+        </label>
+        <label class="field">
+          <span class="field-label">重名处理</span>
+          <select class="input" data-tool="folder-flatten" data-setting="on_conflict">
+            <option value="auto_rename" ${c.on_conflict === "auto_rename" ? "selected" : ""}>自动重命名（加序号，不覆盖）</option>
+            <option value="skip" ${c.on_conflict === "skip" ? "selected" : ""}>跳过重名文件</option>
+          </select>
+        </label>
+      </div>`;
+  }
+  if (tool.id === "image-merge") {
+    const c = imageMergeConfig();
+    return `
+      <div class="settings-inner">
+        <label class="field">
+          <span class="field-label">JPG 质量 <output class="range-value" data-role="quality-value">${c.quality}</output></span>
+          <input class="range" type="range" min="1" max="100" step="1"
+            data-tool="image-merge" data-setting="quality" value="${c.quality}" />
+          <span class="muted">仅 JPG 输出时生效。</span>
+        </label>
+        <label class="field">
+          <span class="field-label">重叠像素</span>
+          <input class="input" type="number" min="0" step="1"
+            data-tool="image-merge" data-setting="overlap" value="${c.overlap}" />
+          <span class="muted">切割的图片若有重叠像素才填写，默认 0。</span>
+        </label>
+        <label class="check-row">
+          <input type="checkbox" data-tool="image-merge" data-setting="delete_sources" ${c.delete_sources ? "checked" : ""} />
+          <span>合并成功后删除原图，不可恢复（默认勾选）</span>
+        </label>
+      </div>`;
+  }
   return `<p class="muted settings-note">此工具在下方「系统设置 · 经典右键菜单」区操作。</p>`;
+}
+
+/** 运行按钮文案：图片合并走多选对话框，按钮直接说明动作。 */
+function runButtonLabel(toolId: string): string {
+  return toolId === "image-merge" ? "选择图片并合并" : "运行";
 }
 
 function renderTools(): void {
@@ -353,13 +424,11 @@ function renderTools(): void {
         capBadges.push(`<span class="badge badge-orange">系统设置</span>`);
       }
       const targetValue = escapeHtml(state.targetPaths.get(tool.id) ?? "");
-      return `
-        <article class="card" data-tool-id="${escapeHtml(tool.id)}">
-          <div class="card-head">
-            <h3>${escapeHtml(tool.name)}</h3>
-            <div class="badges">${platformBadges}${capBadges.join("")}</div>
-          </div>
-          <p class="card-desc">${escapeHtml(tool.description)}</p>
+      // 图片合并的图片路径来自多选对话框，不显示目标路径输入框与「浏览」按钮。
+      const isImageMerge = tool.id === "image-merge";
+      const targetMarkup = isImageMerge
+        ? ""
+        : `
           <div class="card-target">
             <label class="field-label" for="target-${escapeHtml(tool.id)}">目标路径（可选）</label>
             <div class="input-row">
@@ -368,9 +437,17 @@ function renderTools(): void {
                 placeholder="选择或输入文件夹，留空由后端提示" />
               <button class="btn btn-ghost" data-action="browse" title="浏览文件夹">浏览</button>
             </div>
+          </div>`;
+      return `
+        <article class="card" data-tool-id="${escapeHtml(tool.id)}">
+          <div class="card-head">
+            <h3>${escapeHtml(tool.name)}</h3>
+            <div class="badges">${platformBadges}${capBadges.join("")}</div>
           </div>
+          <p class="card-desc">${escapeHtml(tool.description)}</p>
+          ${targetMarkup}
           <div class="card-actions">
-            <button class="btn btn-primary" data-action="run">运行</button>
+            <button class="btn btn-primary" data-action="run">${runButtonLabel(tool.id)}</button>
             <button class="btn" data-action="toggle-settings" aria-expanded="false">设置</button>
           </div>
           <div class="settings" data-role="settings" hidden>${settingsMarkup(tool)}</div>
@@ -395,6 +472,13 @@ async function onBrowse(card: HTMLElement, toolId: string): Promise<void> {
 async function onRun(card: HTMLElement, toolId: string, button: HTMLButtonElement): Promise<void> {
   const tool = state.tools.find((t) => t.id === toolId);
   const scope = tool?.name ?? toolId;
+
+  // 图片合并的图片路径来自多选对话框，不走「目标路径」输入框。
+  if (toolId === "image-merge") {
+    await runImageMerge(scope, button);
+    return;
+  }
+
   const input = card.querySelector('[data-role="target"]') as HTMLInputElement | null;
   const target = input?.value.trim() ? input.value.trim() : null;
 
@@ -409,7 +493,60 @@ async function onRun(card: HTMLElement, toolId: string, button: HTMLButtonElemen
     }
   } finally {
     button.disabled = false;
-    button.textContent = "运行";
+    button.textContent = runButtonLabel(toolId);
+    renderReports();
+  }
+}
+
+/** 图片合并：多选图片 → 数量校验 → 自定义确认弹窗 → 调用后端。 */
+async function runImageMerge(scope: string, button: HTMLButtonElement): Promise<void> {
+  // 标注字面量类型以命中 open() 的「多选文件」重载，返回值稳定为 string[] | null。
+  const dialogOptions: OpenDialogOptions & { directory: false; multiple: true } = {
+    multiple: true,
+    directory: false,
+    filters: [{ name: "图片", extensions: ["jpg", "jpeg", "png", "bmp", "webp"] }],
+    title: "选择要合并的图片（按文件名排序，两两一组）",
+  };
+
+  let paths: string[];
+  try {
+    const selected = await open(dialogOptions);
+    if (selected === null) return; // 用户取消，静默返回
+    paths = selected;
+  } catch {
+    showBanner("文件选择对话框不可用，请检查 plugin-dialog 配置");
+    return;
+  }
+
+  if (paths.length < 2) {
+    showBanner("请至少选择 2 张图片后再合并（图片按文件名排序，两两一组）。");
+    return;
+  }
+
+  const confirmed = await confirmDialog({
+    title: "确认合并图片",
+    bodyHtml:
+      "将按文件名排序<b>两两合并</b>；输出到第一张图片所在文件夹；合并成功并验证输出有效后<b>会删除原图，此操作不可恢复</b>。",
+    confirmText: "确认合并",
+    danger: true,
+  });
+  if (!confirmed) return;
+
+  button.disabled = true;
+  button.textContent = "运行中…";
+  try {
+    const res = await api.runTool("image-merge", paths[0], {
+      ...toolOptions("image-merge"),
+      paths,
+    });
+    if (!res.ok) {
+      pushReport(false, scope, `调用失败：${res.error}`, []);
+    } else {
+      pushReport(res.data.ok, scope, res.data.message, res.data.details);
+    }
+  } finally {
+    button.disabled = false;
+    button.textContent = runButtonLabel("image-merge");
     renderReports();
   }
 }
@@ -466,6 +603,9 @@ function bindToolsEvents(): void {
       section[setting] = node.value;
     } else if (node instanceof HTMLInputElement && node.type === "range") {
       section[setting] = Number(node.value);
+    } else if (node instanceof HTMLInputElement && node.type === "number") {
+      const value = Number(node.value);
+      section[setting] = Number.isFinite(value) && value >= 0 ? Math.floor(value) : 0;
     }
     void saveConfig();
   });

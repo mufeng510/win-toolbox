@@ -12,6 +12,7 @@
    - `algorithm` → `hash`，`preview` → `dry_run`
    - `delete_original` → `delete_source`
 6. 每个工具 crate 必须实现 `toolbox_core::Tool` trait，并通过 `src-tauri/src/lib.rs::build_registry` 注册。
+7. `image-merge` 删除原图不可逆：必须先写临时文件、验证可解码且尺寸正确、再重命名，最后才删原图；任何一步失败都不得删除。`folder-flatten` 默认对重名文件自动加 `(1)`/`(2)`（可配置为跳过），但绝不覆盖已有文件。
 
 ## 文件边界
 - `crates/toolbox-core`：共享接口，改动会影响所有工具，需谨慎。

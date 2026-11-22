@@ -9,8 +9,10 @@ use crate::{build_registry, commands, menu};
 const HELP: &str = "win-toolbox\n\n\
   （无参数）              打开工具箱主界面\n\
   --tool <id> --path <p>  运行指定工具（右键菜单使用）\n\
+  --tool image-merge --path a.png --path b.png  合并两张切片图片（可传多个 --path）\n\
   --install-menus         安装全部右键菜单\n\
   --uninstall-menus       卸载全部右键菜单\n\
+  --quiet / -q            不弹消息框，结果只输出到终端（脚本/测试用）
   --help                  显示帮助";
 
 fn value_after(args: &[String], flag: &str) -> Option<String> {
@@ -18,6 +20,23 @@ fn value_after(args: &[String], flag: &str) -> Option<String> {
         .position(|a| a == flag)
         .and_then(|i| args.get(i + 1))
         .cloned()
+}
+
+/// 收集同一个 flag 的所有取值，供 image-merge 的多路径命令行测试使用。
+fn values_after(args: &[String], flag: &str) -> Vec<String> {
+    let mut out = Vec::new();
+    let mut i = 0;
+    while i < args.len() {
+        if args[i] == flag {
+            if let Some(v) = args.get(i + 1) {
+                out.push(v.clone());
+            }
+            i += 2;
+        } else {
+            i += 1;
+        }
+    }
+    out
 }
 
 pub fn headless(args: &[String]) -> Result<ToolReport> {
@@ -59,7 +78,17 @@ pub fn headless(args: &[String]) -> Result<ToolReport> {
         .ok_or_else(|| ToolboxError::InvalidArgument(format!("未知工具: {tool_id}")))?;
 
     let section = config::tool_section(&tool_id)?;
-    let options = commands::normalize_options(&tool_id, &section);
+    let mut options = commands::normalize_options(&tool_id, &section);
+    // image-merge 的路径由 GUI 多选放进 options.paths；命令行用多个 --path
+    // 走同一条核心逻辑，便于真实图片验证。
+    if tool_id == "image-merge" {
+        let paths = values_after(args, "--path");
+        if !paths.is_empty() {
+            if let Some(map) = options.as_object_mut() {
+                map.insert("paths".into(), serde_json::json!(paths));
+            }
+        }
+    }
 
     tool.run(RunContext { target, options })
 }

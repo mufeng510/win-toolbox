@@ -16,6 +16,8 @@ pub fn build_registry() -> ToolRegistry {
     registry.register(Box::new(tool_hashrename::HashRenameTool));
     registry.register(Box::new(tool_heic2jpg::HeicToJpgTool::new()));
     registry.register(Box::new(tool_classic_menu::ClassicMenuTool));
+    registry.register(Box::new(tool_flatten::FlattenTool));
+    registry.register(Box::new(tool_image_merge::ImageMergeTool));
     registry
 }
 
