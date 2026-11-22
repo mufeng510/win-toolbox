@@ -1,0 +1,21 @@
+[package]
+name = "tool-heic2jpg"
+version.workspace = true
+edition.workspace = true
+# heic 0.1.6 的 rust-version 为 1.89（image 0.25 为 1.88），本 crate 必须如实声明，
+# 否则旧工具链会给出难以理解的依赖错误。workspace 的 1.82 仅作为其它 crate 的默认值。
+rust-version = "1.89"
+license.workspace = true
+
+[dependencies]
+toolbox-core = { workspace = true }
+serde_json = { workspace = true }
+
+# 纯 Rust HEIC/HEIF 解码：0.1.6 的 HEVC 后端是内置且纯 Rust 的，
+# 没有 backend-rust 这个 feature（那是已 yank 的 0.2.0 README 中的写法）。
+# 不启用 av1 / unci / parallel，避免引入额外依赖；如需覆盖 AV1/uncompressed HEIF，
+# 可再按需打开 av1 / unci（同样为纯 Rust）。
+heic = { version = "0.1.6", default-features = false, features = ["std"] }
+
+# 只需要 JPEG 编解码 + 基础图像缓冲，关掉默认格式以免拖进 rayon/png 等无关依赖。
+image = { version = "0.25.10", default-features = false, features = ["jpeg"] }

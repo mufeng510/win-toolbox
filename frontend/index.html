@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- CSP 由 Tauri 的 tauri.conf.json 统一配置，避免与 Vite 注入的内联脚本冲突 -->
+    <title>win-toolbox</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- 顶部标题栏 -->
+      <header class="titlebar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">🧰</span>
+          <div class="brand-text">
+            <h1>win-toolbox</h1>
+            <span class="brand-sub">实用的 Windows 工具箱</span>
+          </div>
+        </div>
+        <div class="env">
+          <span class="badge badge-accent" id="app-version">版本加载中…</span>
+          <span class="badge" id="app-platform">平台加载中…</span>
+        </div>
+      </header>
+
+      <main class="container">
+        <!-- 全局错误提示 -->
+        <div id="banner" hidden></div>
+
+        <!-- 工具列表 -->
+        <section class="panel" aria-labelledby="tools-title">
+          <div class="panel-head">
+            <div>
+              <h2 id="tools-title">工具</h2>
+              <p class="panel-desc">选择一个工具运行；「运行」时若未填写目标路径，后端会给出提示。</p>
+            </div>
+          </div>
+          <div id="tools-grid" class="grid"></div>
+        </section>
+
+        <!-- 右键菜单管理 -->
+        <section class="panel" aria-labelledby="menu-title">
+          <div class="panel-head">
+            <div>
+              <h2 id="menu-title">右键菜单管理</h2>
+              <p class="panel-desc">勾选需要启用的菜单项，然后批量安装或卸载。所有菜单只注册到当前用户（HKCU）。</p>
+            </div>
+          </div>
+          <div id="menu-list" class="menu-list"></div>
+          <div class="toolbar">
+            <button class="btn" id="menu-install">安装所勾选</button>
+            <button class="btn" id="menu-uninstall">卸载所勾选</button>
+            <span class="toolbar-spacer"></span>
+            <button class="btn btn-ghost" id="menu-install-all">全部安装</button>
+            <button class="btn btn-ghost" id="menu-uninstall-all">全部卸载</button>
+          </div>
+        </section>
+
+        <!-- 系统设置工具：classic-menu -->
+        <section class="panel panel-highlight" aria-labelledby="classic-title">
+          <div class="panel-head">
+            <div>
+              <h2 id="classic-title">系统设置 · 经典右键菜单</h2>
+              <p class="panel-desc">在 Windows 11 的「新菜单」与「经典菜单」之间一键切换。</p>
+            </div>
+          </div>
+          <div class="notes">
+            <span class="note">✔ 只写 HKCU（当前用户注册表）</span>
+            <span class="note">✔ 无需管理员权限</span>
+            <span class="note">✔ 需重启资源管理器生效</span>
+            <span class="note">✔ 可一键还原</span>
+          </div>
+          <div id="classic-body"></div>
+        </section>
+
+        <!-- 任务结果面板 -->
+        <section class="panel" aria-labelledby="report-title">
+          <div class="panel-head">
+            <div>
+              <h2 id="report-title">任务结果 <span class="count" id="report-count">0</span></h2>
+              <p class="panel-desc">展示最近的工具运行与菜单操作结果。</p>
+            </div>
+            <button class="btn btn-ghost" id="report-clear">清空</button>
+          </div>
+          <div id="report-list" class="report-list"></div>
+        </section>
+      </main>
+
+      <footer class="footer">win-toolbox · 本地运行，数据仅保存在本机</footer>
+    </div>
+
+    <div id="modal-root"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
