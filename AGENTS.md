@@ -14,6 +14,9 @@
 6. 每个工具 crate 必须实现 `toolbox_core::Tool` trait，并通过 `src-tauri/src/lib.rs::build_registry` 注册。
 7. `image-merge` 删除原图不可逆：必须先写临时文件、验证可解码且尺寸正确、再重命名，最后才删原图；任何一步失败都不得删除。`folder-flatten` 默认对重名文件自动加 `(1)`/`(2)`（可配置为跳过），但绝不覆盖已有文件。
 
+## 发版
+- 推送 `v*` 标签触发 `.github/workflows/release.yml`，从 tag 同步版本后构建 NSIS/MSI 并发布到 Release；详见 `docs/development/workflow.md`。
+
 ## 文件边界
 - `crates/toolbox-core`：共享接口，改动会影响所有工具，需谨慎。
 - `crates/tool-*`：各工具内部实现，互不依赖。

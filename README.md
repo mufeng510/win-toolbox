@@ -105,6 +105,15 @@ win-toolbox.exe --uninstall-menus
 - **可逆性**：点「恢复新菜单」即删除这两个键；覆盖前的值备份在 `%APPDATA%\win-toolbox\classic-menu-backup.json`。
 - **注意**：该机制未被微软官方文档支持，Windows 更新可能再次改变行为；代码里已注明来源为社区实测报道。
 
+## 自动发版
+
+推送 `v*` 标签（如 `v0.2.0`）会触发 GitHub Actions，自动同步版本、构建 Windows 安装包并发布到 Release；也可在 Actions 页面手动触发 `Release` workflow 并输入版本号。详见 `docs/development/workflow.md`。
+
+- 产物：NSIS 安装包（当前用户安装）与 MSI，位于 `src-tauri/target/release/bundle/`
+- 权限：workflow 仅申请 `contents: write`，使用内置 `GITHUB_TOKEN`，无外部凭证
+- 签名：安装包未签名，首次安装 Windows 会提示「未知发布者」；个人使用可点「仍要运行」
+- CI 环境：使用 `windows-latest` runner 自带的 Rust/MSVC/WebView2，不调用本机专用的 `scripts/cargo.ps1`
+
 ## 迁移说明
 
 - HashRename 只移植了 core（算法、journal、目录锁、回收站）与原测试；原 Tauri 壳、CLI、GUI、CI、安装包、其他平台的菜单适配均已移除。
