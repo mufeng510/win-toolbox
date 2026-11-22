@@ -2,7 +2,7 @@
 
 批量把文件夹内的 HEIC / HEIF 转成 JPG，**纯 Rust 实现**，不再需要 ImageMagick / `magick.exe`。
 
-实现 `toolbox-core::Tool` trait，`id = "heic-to-jpg"`，`platforms = ["windows", "macos", "linux"]`，与 `Tools/manifest.json` 中的注册信息一致。
+实现 `toolbox-core::Tool` trait，`id = "heic-to-jpg"`，`platforms = ["windows", "macos", "linux"]`，与 `tools/manifest.json` 中的注册信息一致。
 
 ## 功能
 
