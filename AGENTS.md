@@ -25,7 +25,7 @@
 ## 已知待验证
 - `heic` 0.1.6 为 **AGPL-3.0-only OR Imazen-Commercial**（非 MIT）；个人本地使用可行，分发前必须重新评估许可，详见 `crates/tool-heic2jpg/README.md`。
 - 本机已安装 Rust 1.100.0、VS Build Tools（MSVC 14.44）+ Windows 10 SDK 19041，并通过 rsproxy 镜像加速依赖下载；这些是环境前置条件，换机器时需重装。
-- 经典菜单的双 CLSID 方案来自社区报道，未在真机验证；修改后必须实测。
+- 经典菜单的双 CLSID 方案已由用户在 Windows 11 真机验证通过（2026-11-22）；底层仍是社区方案、非微软官方支持，Windows 大版本更新后需复测。
 - GUI 冒烟测试需在**交互式桌面会话**中进行；Agent 的执行环境是 Session 0，`tauri dev` 会因 WebView2 无法创建窗口而失败（ERROR_INVALID_WINDOW_HANDLE），属环境限制。
 - 编译/测试一律用 `scripts\cargo.ps1`（自动设置 MSVC + Windows SDK 的 PATH/LIB/INCLUDE），不要直接调用 cargo。
 

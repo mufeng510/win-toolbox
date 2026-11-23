@@ -405,11 +405,13 @@ function runButtonLabel(toolId: string): string {
 
 function renderTools(): void {
   const grid = el("tools-grid");
-  if (state.tools.length === 0) {
+  // 系统设置类工具有独立的操作区（下方的经典菜单面板），不在工具列表重复展示。
+  const visible = state.tools.filter((t) => !t.capabilities?.system_tweak);
+  if (visible.length === 0) {
     grid.innerHTML = `<p class="empty">未获取到工具列表。</p>`;
     return;
   }
-  grid.innerHTML = state.tools
+  grid.innerHTML = visible
     .map((tool) => {
       const platformBadges = (tool.platforms ?? [])
         .map((p) => `<span class="badge">${escapeHtml(platformLabel(p))}</span>`)

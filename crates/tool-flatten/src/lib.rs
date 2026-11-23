@@ -5,7 +5,7 @@
 
 pub mod core;
 
-use toolbox_core::{Capabilities, RunContext, Tool, ToolReport, ToolboxError};
+use toolbox_core::{Capabilities, MenuArg, MenuLocation, MenuVerb, RunContext, Tool, ToolReport, ToolboxError};
 
 use crate::core::{run_flatten, ConflictPolicy, FlattenOptions, FlattenOutcome};
 
@@ -30,8 +30,23 @@ impl Tool for FlattenTool {
     }
 
     fn capabilities(&self) -> Capabilities {
-        // 右键菜单由外壳层统一声明；本工具不改动系统设置。
-        Capabilities::default()
+        // 右键菜单是工具的固有能力，由 Tool trait 声明，外壳从注册表统一生成。
+        let label = self.name().to_string();
+        Capabilities {
+            context_menu: vec![
+                MenuVerb {
+                    location: MenuLocation::Directory,
+                    label: label.clone(),
+                    arg: MenuArg::PathV,
+                },
+                MenuVerb {
+                    location: MenuLocation::DirectoryBackground,
+                    label,
+                    arg: MenuArg::PathV,
+                },
+            ],
+            system_tweak: false,
+        }
     }
 
     fn run(&self, ctx: RunContext) -> toolbox_core::Result<ToolReport> {

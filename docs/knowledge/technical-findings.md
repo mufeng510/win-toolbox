@@ -22,6 +22,13 @@
   - 首次运行因产物路径写成 `src-tauri/target/...` 导致 Show artifacts 失败、发布被跳过；已修正
   - 运行中有 Node.js 20 弃用警告（GitHub 强制相关 action 在 Node 24 上运行），不影响构建与发布
 
+## Windows 11 经典菜单双 CLSID 方案已真机验证
+
+- **来源**：用户在 Windows 11 真机实测确认（2026-11-22）
+- **适用范围**：本工具的 classic-menu 开关
+- **结论**：双 CLSID 方案可正常在经典菜单与新菜单之间切换，用户确认验证通过、无问题
+- **注意**：该机制来自社区报道、非微软官方支持；Windows 大版本更新后需复测
+
 ## Windows 右键多选文件传参不可靠
 
 - **来源**：微软官方文档 `How to Employ the Verb Selection Model` + 社区实测（2015/2019 年多个报告互相矛盾）

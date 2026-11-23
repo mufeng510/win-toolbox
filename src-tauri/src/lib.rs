@@ -36,6 +36,27 @@ mod tests {
             ]
         );
     }
+
+    /// 右键菜单能力属于工具自身，不能像这次一样在重构中丢失。
+    #[test]
+    fn menu_verbs_are_declared() {
+        let registry = build_registry();
+        let expected = [
+            ("hash-rename", 2),
+            ("heic-to-jpg", 1),
+            ("classic-menu", 0),
+            ("folder-flatten", 2),
+            ("image-merge", 0),
+        ];
+        for (id, count) in expected {
+            let tool = registry.get(id).expect("工具未注册");
+            assert_eq!(
+                tool.capabilities().context_menu.len(),
+                count,
+                "{id} 的右键菜单动词数量不对"
+            );
+        }
+    }
 }
 
 pub fn run() {

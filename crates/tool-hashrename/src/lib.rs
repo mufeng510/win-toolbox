@@ -10,7 +10,7 @@ pub mod platform;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
-use toolbox_core::{Capabilities, RunContext, Tool, ToolReport, ToolboxError};
+use toolbox_core::{Capabilities, MenuArg, MenuLocation, MenuVerb, RunContext, Tool, ToolReport, ToolboxError};
 
 use crate::core::hasher::{default_thread_count, HashAlgorithm};
 use crate::core::models::ProcessingResult;
@@ -60,8 +60,23 @@ impl Tool for HashRenameTool {
     }
 
     fn capabilities(&self) -> Capabilities {
-        // 右键菜单注册属于外壳职责,已移除;由主程序统一声明。
-        Capabilities::default()
+        // 右键菜单是工具的固有能力，由 Tool trait 声明，外壳从注册表统一生成。
+        let label = self.name().to_string();
+        Capabilities {
+            context_menu: vec![
+                MenuVerb {
+                    location: MenuLocation::Directory,
+                    label: label.clone(),
+                    arg: MenuArg::PathV,
+                },
+                MenuVerb {
+                    location: MenuLocation::DirectoryBackground,
+                    label,
+                    arg: MenuArg::PathV,
+                },
+            ],
+            system_tweak: false,
+        }
     }
 
     fn run(&self, ctx: RunContext) -> toolbox_core::Result<ToolReport> {
